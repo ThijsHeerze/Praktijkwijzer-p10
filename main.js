@@ -8,12 +8,17 @@ const searchInput2 = document.querySelector("#search2");
 const searchButton2 = document.querySelector("#searchButton2");
 const resultsElem2 = document.querySelector("#food-results-2");
 
-searchButton1.addEventListener('click', (e) => {
-  searchHandler(searchInput1, resultsElem1);
+const compareButton = document.querySelector("#compareButton");
+const comparisonResultElem = document.querySelector("#comparison-result");
+
+let foodData1, foodData2;
+
+searchButton1.addEventListener('click', () => {
+  searchHandler(searchInput1, resultsElem1, 1);
 });
 
-searchButton2.addEventListener('click', (e) => {
-  searchHandler(searchInput2, resultsElem2);
+searchButton2.addEventListener('click', () => {
+  searchHandler(searchInput2, resultsElem2, 2);
 });
 
 searchInput1.addEventListener('keydown', (event) => {
@@ -28,7 +33,13 @@ searchInput2.addEventListener('keydown', (event) => {
   }
 });
 
-function searchHandler(searchInput, resultsElem) {
+compareButton.addEventListener('click', () => {
+  if (foodData1 && foodData2) {
+    compareFoods(foodData1, foodData2);
+  }
+});
+
+function searchHandler(searchInput, resultsElem, foodNumber) {
   const userInput = searchInput.value;
 
   if (userInput == "") {
@@ -36,14 +47,11 @@ function searchHandler(searchInput, resultsElem) {
     return;
   }
 
-  fetch(API_URL + `foods/search?api_key=${API_KEY}&query=${userInput}&pageSize=10`)
+  fetch(API_URL + `foods/search?api_key=${API_KEY}&query=${userInput}&pageSize=1`)
     .then((response) => response.json())
     .then((data) => {
-      console.log(data);
-      resultsElem.innerHTML = "";
-
-      const foods = data.foods;
-      foods.forEach((food) => {
+      const food = data.foods[0];
+      if (food) {
         const elem = document.createElement('div');
         const nutrientsElem = document.createElement('ul');
 
@@ -55,7 +63,34 @@ function searchHandler(searchInput, resultsElem) {
         });
 
         elem.append(nutrientsElem);
+        resultsElem.innerHTML = "";
         resultsElem.append(elem);
-      });
+
+        if (foodNumber === 1) {
+          foodData1 = food;
+        } else {
+          foodData2 = food;
+        }
+      }
     });
+}
+
+function compareFoods(food1, food2) {
+  const comparisonResult = document.createElement('div');
+  comparisonResult.innerHTML = "<h2>Vergelijking van voedingswaarden:</h2>";
+
+  const nutrientsElem = document.createElement('ul');
+
+  food1.foodNutrients.forEach((nutrient1) => {
+    const nutrient2 = food2.foodNutrients.find((n) => n.nutrientName === nutrient1.nutrientName);
+
+    if (nutrient2) {
+      const difference = nutrient1.value - nutrient2.value;
+      nutrientsElem.innerHTML += `<li>${nutrient1.nutrientName}: ${difference.toFixed(2)} ${nutrient1.unitName}</li>`;
+    }
+  });
+
+  comparisonResult.append(nutrientsElem);
+  comparisonResultElem.innerHTML = "";
+  comparisonResultElem.append(comparisonResult);
 }
