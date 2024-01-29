@@ -8,8 +8,9 @@ const searchInput2 = document.querySelector("#search2");
 const searchButton2 = document.querySelector("#searchButton2");
 const resultsElem2 = document.querySelector("#food-results-2");
 
-const compareButton = document.querySelector("#compareButton");
 const comparisonResultElem = document.querySelector("#comparison-result");
+const resultsElem3 = document.querySelector("#food-results-3");
+const comparisonResultElem3 = document.querySelector("#comparison-result-3");
 
 let foodData1, foodData2;
 
@@ -19,24 +20,6 @@ searchButton1.addEventListener('click', () => {
 
 searchButton2.addEventListener('click', () => {
   searchHandler(searchInput2, resultsElem2, 2);
-});
-
-searchInput1.addEventListener('keydown', (event) => {
-  if (event.key === "Enter") {
-    searchButton1.click();
-  }
-});
-
-searchInput2.addEventListener('keydown', (event) => {
-  if (event.key === "Enter") {
-    searchButton2.click();
-  }
-});
-
-compareButton.addEventListener('click', () => {
-  if (foodData1 && foodData2) {
-    compareFoods(foodData1, foodData2);
-  }
 });
 
 function searchHandler(searchInput, resultsElem, foodNumber) {
@@ -63,19 +46,25 @@ function searchHandler(searchInput, resultsElem, foodNumber) {
         });
 
         elem.append(nutrientsElem);
-        resultsElem.innerHTML = "";
-        resultsElem.append(elem);
+
+        resultsElem.innerHTML = resultsElem.innerHTML + elem.innerHTML;
 
         if (foodNumber === 1) {
           foodData1 = food;
         } else {
           foodData2 = food;
+
+          if (foodData1 && foodData2) {
+            compareFoods(foodData1, foodData2);
+            compareFoods(foodData1, foodData2, true);
+          }
         }
       }
     });
 }
 
-function compareFoods(food1, food2) {
+
+function compareFoods(food1, food2, forThirdColumn = false) {
   const comparisonResult = document.createElement('div');
   comparisonResult.innerHTML = "<h2>Vergelijking van voedingswaarden:</h2>";
 
@@ -90,7 +79,13 @@ function compareFoods(food1, food2) {
     }
   });
 
-  comparisonResult.append(nutrientsElem);
-  comparisonResultElem.innerHTML = "";
-  comparisonResultElem.append(comparisonResult);
+  if (!forThirdColumn) {
+    comparisonResult.append(nutrientsElem);
+    comparisonResultElem.innerHTML = "";
+    comparisonResultElem.append(comparisonResult);
+  } else {
+    comparisonResult.append(nutrientsElem);
+    comparisonResultElem3.innerHTML = "";
+    comparisonResultElem3.append(comparisonResult);
+  }
 }
